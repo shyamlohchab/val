@@ -4,13 +4,14 @@
 
 namespace Decryption
 {
-    static uintptr_t g_base    = 0;
-    static uintptr_t g_gworld  = 0;
-    static uintptr_t g_gobjs   = 0;
-    static uintptr_t g_gnames  = 0;
+    static uintptr_t g_base   = 0;
+    static uintptr_t g_gworld = 0;
+    static uintptr_t g_gobjs  = 0;
+    static uintptr_t g_gnames = 0;
 
-    // Valorant pointer decryption stub.
-    // The actual XOR/ROR constants change per patch — update from IDA.
+    // Valorant pointer decryption.
+    // Actual XOR/ROR constants change per patch — update from IDA.
+    // Current stub: single XOR with DECRYPT_KEY (0x0 = passthrough until patched).
     uintptr_t DecryptPointer(uintptr_t encrypted)
     {
         // Example multi-step decryption (patch-specific, update as needed):

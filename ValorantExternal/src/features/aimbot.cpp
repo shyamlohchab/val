@@ -21,10 +21,9 @@ namespace Aimbot
         return transform.GetBoneLocation();
     }
 
-    // Reads the local player's current view rotation via GetPlayerViewPoint
+    // Reads the local player's current view rotation via PlayerController offset
     static FRotator GetViewRotation()
     {
-        // Stub — read from PlayerController offset
         uintptr_t gworld = Decryption::GetGWorld();
         uintptr_t gi     = *reinterpret_cast<uintptr_t*>(gworld + Offsets::UWORLD_GAME_INSTANCE);
         uintptr_t lp     = *reinterpret_cast<uintptr_t*>(
@@ -37,7 +36,7 @@ namespace Aimbot
     // Sends a relative mouse move to aim toward target
     static void SetAim(const FRotator& target)
     {
-        FRotator current = GetViewRotation();
+        FRotator current  = GetViewRotation();
         FRotator smoothed = Math::SmoothAim(current, target, g_cfg.smooth);
 
         // Convert delta to mouse units (sensitivity-dependent — tune as needed)
@@ -57,8 +56,8 @@ namespace Aimbot
         uintptr_t gworld = Decryption::GetGWorld();
         if (!gworld) return;
 
-        // Iterate player array from GameState
-        uintptr_t gameState = *reinterpret_cast<uintptr_t*>(gworld + 0x170);
+        // Iterate player array from GameState via offset constant
+        uintptr_t gameState = *reinterpret_cast<uintptr_t*>(gworld + Offsets::UWORLD_GAME_STATE);
         auto& playerArray   = *reinterpret_cast<TArray<uintptr_t>*>(
             gameState + Offsets::GAMESTATE_PLAYER_ARRAY);
 
@@ -78,12 +77,13 @@ namespace Aimbot
             int team = *reinterpret_cast<int*>(pawn + Offsets::PAWN_TEAM_ID);
             // Skip teammates (team 0 = local, same team)
             // TODO: compare against local team ID
+            (void)team;
 
             uintptr_t mesh = *reinterpret_cast<uintptr_t*>(pawn + Offsets::PAWN_MESH);
             if (!mesh) continue;
 
-            FVector bonePos = GetBonePos(mesh, g_cfg.targetBone);
-            FVector delta   = bonePos - localPos;
+            FVector bonePos  = GetBonePos(mesh, g_cfg.targetBone);
+            FVector delta    = bonePos - localPos;
             FRotator toTarget = Math::VectorToRotator(delta);
             FRotator viewRot  = GetViewRotation();
 

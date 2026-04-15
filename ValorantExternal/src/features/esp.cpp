@@ -38,7 +38,8 @@ namespace ESP
         uintptr_t gworld = Decryption::GetGWorld();
         if (!gworld) return;
 
-        uintptr_t gameState = *reinterpret_cast<uintptr_t*>(gworld + 0x170);
+        // Use offset constant instead of hardcoded magic
+        uintptr_t gameState = *reinterpret_cast<uintptr_t*>(gworld + Offsets::UWORLD_GAME_STATE);
         auto& playerArray   = *reinterpret_cast<TArray<uintptr_t>*>(
             gameState + Offsets::GAMESTATE_PLAYER_ARRAY);
 
@@ -59,23 +60,23 @@ namespace ESP
                     mesh + Offsets::MESH_COMPONENT_SPACE_BASES);
                 if (!arr) return {};
                 return reinterpret_cast<FTransform*>(arr + idx * sizeof(FTransform))
-                       ->GetBoneLocation();
+                           ->GetBoneLocation();
             };
 
             FVector head = readBone(Offsets::BONE_HEAD);
             FVector feet = readBone(Offsets::BONE_PELVIS);
 
             PlayerEntry entry{};
-            entry.isEnemy   = true; // TODO: team comparison
-            entry.health    = *reinterpret_cast<float*>(pawn + Offsets::PAWN_HEALTH);
-            entry.distance  = Math::Distance(head, {}) / 100.f; // cm -> m
+            entry.isEnemy  = true; // TODO: team comparison
+            entry.health   = *reinterpret_cast<float*>(pawn + Offsets::PAWN_HEALTH);
+            entry.distance = Math::Distance(head, {}) / 100.f; // cm -> m
 
             if (entry.distance > g_cfg.maxDistance) continue;
 
-            entry.onScreen  = Math::WorldToScreen(head, g_vpMatrix,
-                                g_screenW, g_screenH, entry.headScreen)
-                           && Math::WorldToScreen(feet, g_vpMatrix,
-                                g_screenW, g_screenH, entry.feetScreen);
+            entry.onScreen = Math::WorldToScreen(head, g_vpMatrix,
+                                 g_screenW, g_screenH, entry.headScreen)
+                          && Math::WorldToScreen(feet, g_vpMatrix,
+                                 g_screenW, g_screenH, entry.feetScreen);
 
             // Name from PlayerState
             auto nameStr = reinterpret_cast<FString*>(ps + Offsets::PLAYER_STATE_NAME);
@@ -127,7 +128,7 @@ namespace ESP
             // Health bar
             if (g_cfg.health)
             {
-                float barH = p.feetScreen.Y - p.headScreen.Y;
+                float barH   = p.feetScreen.Y - p.headScreen.Y;
                 float filled = (p.health / 100.f) * barH;
                 dl->AddRectFilled(
                     { p.headScreen.X - 8.f, p.feetScreen.Y - filled },
