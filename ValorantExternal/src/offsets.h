@@ -190,35 +190,44 @@ namespace Offsets
 
     // ────────────────────────────────────────────────────────────────────────
     //  AOB PATTERNS  (verify in x64dbg after each patch)
+    //
+    //  AOB_NAME_POOL    — GNamePoolData    LEA RAX,[rip+X]
+    //  AOB_UOBJECT_ARRAY — GUObjectArray   MOV RAX,[rip+X]
+    //  AOB_GWORLD       — GWorld           MOV RBX,[rip+X] ; deref once → UWorld*
+    //
+    //  Fields: pat (byte sequence), mask (x=exact ?=wildcard),
+    //          rip_off (disp32 start byte), instr_sz (full instr len),
+    //          deref (true = RPM once after RIP resolve)
     // ────────────────────────────────────────────────────────────────────────
 
-    // GNamePoolData — LEA RAX,[rip+X]
+    // GNamePoolData — LEA RAX,[rip+X]  /  EB 00  /  LEA RCX,[rip+X]
     static constexpr struct { const char* pat; const char* mask; uint32_t rip_off; uint32_t instr_sz; bool deref; }
     AOB_NAME_POOL = {
-        "\x48\x8D\x05\x00\x00\x00\x00"
-        "\xEB\x00"
-        "\x48\x8D\x0D\x00\x00\x00\x00",
+        "\x48\x8D\x05\x00\x00\x00\x00"   // LEA RAX,[rip+disp32]
+        "\xEB\x00"                         // JMP short +?
+        "\x48\x8D\x0D\x00\x00\x00\x00",  // LEA RCX,[rip+disp32]
         "xxx????x?xxx????",
         3, 7, false
     };
 
-    // GUObjectArray — MOV RAX,[rip+X]
+    // GUObjectArray — MOV RAX,[rip+X]  /  TEST RAX,RAX  /  JZ  /  MOV RAX,[RAX+?]
     static constexpr struct { const char* pat; const char* mask; uint32_t rip_off; uint32_t instr_sz; bool deref; }
     AOB_UOBJECT_ARRAY = {
-        "\x48\x8B\x05\x00\x00\x00\x00"
-        "\x48\x85\xC0"
-        "\x74\x00"
-        "\x48\x8B\x40\x00",
-        "xxx????xxx x?xxx?",
+        "\x48\x8B\x05\x00\x00\x00\x00"   // MOV RAX,[rip+disp32]
+        "\x48\x85\xC0"                    // TEST RAX,RAX
+        "\x74\x00"                        // JZ short +?
+        "\x48\x8B\x40\x00",              // MOV RAX,[RAX+?]
+        "xxx????xxx?x?xxx?",
         3, 7, false
     };
 
-    // GWorld — MOV RBX,[rip+X] ; deref once → UWorld*
+    // GWorld — MOV RBX,[rip+X]  /  TEST RBX,RBX  /  JZ short
+    // deref=true: RIP resolve → pointer → UWorld*
     static constexpr struct { const char* pat; const char* mask; uint32_t rip_off; uint32_t instr_sz; bool deref; }
     AOB_GWORLD = {
-        "\x48\x8B\x1D\x00\x00\x00\x00"
-        "\x48\x85\xDB"
-        "\x74\x00",
+        "\x48\x8B\x1D\x00\x00\x00\x00"   // MOV RBX,[rip+disp32]
+        "\x48\x85\xDB"                    // TEST RBX,RBX
+        "\x74\x00",                       // JZ short +?
         "xxx????xxxx?",
         3, 7, true
     };
@@ -300,50 +309,50 @@ namespace Offsets
     wsprintfA(buf, "[Offsets] " label " = 0x%llX\n", (unsigned long long)(val)); \
     OutputDebugStringA(buf);
 
-        _DUMP("g_moduleBase",              g_moduleBase)
-        _DUMP("g_namePool",                g_namePool)
-        _DUMP("g_uObjectArray",            g_uObjectArray)
-        _DUMP("g_world",                   g_world)
-        _DUMP("g_processEvent",            g_processEvent)
-        _DUMP("g_staticFindObject",        g_staticFindObject)
-        _DUMP("g_staticLoadObject",        g_staticLoadObject)
-        _DUMP("g_fmemoryMalloc",           g_fmemoryMalloc)
-        _DUMP("g_boneMatrix",              g_boneMatrix)
-        _DUMP("g_setOutlineMode",          g_setOutlineMode)
-        _DUMP("g_triggerVeh",              g_triggerVeh)
-        _DUMP("g_playFinisher",            g_playFinisher)
-        _DUMP("g_getSpreadValues",         g_getSpreadValues)
-        _DUMP("g_getSpreadAngles",         g_getSpreadAngles)
-        _DUMP("g_toVectorAndNormalize",    g_toVectorAndNormalize)
-        _DUMP("g_toAngleAndNormalize",     g_toAngleAndNormalize)
-        _DUMP("g_getFiringLocationAndDir", g_getFiringLocationAndDir)
+        _DUMP("g_moduleBase",               g_moduleBase)
+        _DUMP("g_namePool",                 g_namePool)
+        _DUMP("g_uObjectArray",             g_uObjectArray)
+        _DUMP("g_world",                    g_world)
+        _DUMP("g_processEvent",             g_processEvent)
+        _DUMP("g_staticFindObject",         g_staticFindObject)
+        _DUMP("g_staticLoadObject",         g_staticLoadObject)
+        _DUMP("g_fmemoryMalloc",            g_fmemoryMalloc)
+        _DUMP("g_boneMatrix",               g_boneMatrix)
+        _DUMP("g_setOutlineMode",           g_setOutlineMode)
+        _DUMP("g_triggerVeh",               g_triggerVeh)
+        _DUMP("g_playFinisher",             g_playFinisher)
+        _DUMP("g_getSpreadValues",          g_getSpreadValues)
+        _DUMP("g_getSpreadAngles",          g_getSpreadAngles)
+        _DUMP("g_toVectorAndNormalize",     g_toVectorAndNormalize)
+        _DUMP("g_toAngleAndNormalize",      g_toAngleAndNormalize)
+        _DUMP("g_getFiringLocationAndDir",  g_getFiringLocationAndDir)
         // ── struct offsets ──
-        _DUMP("UOBJECT_FLAGS",             UOBJECT_FLAGS)
-        _DUMP("UOBJECT_INTERNAL_INDEX",    UOBJECT_INTERNAL_INDEX)
-        _DUMP("UOBJECT_NAME_PRIVATE",      UOBJECT_NAME_PRIVATE)
-        _DUMP("UOBJECT_OUTER",             UOBJECT_OUTER)
-        _DUMP("FUOBJECTITEM_SIZE",         FUOBJECTITEM_SIZE)
-        _DUMP("FTRANSFORM_SIZE",           FTRANSFORM_SIZE)
-        _DUMP("MESH_BONE_SPACE_TRANSFORMS",MESH_BONE_SPACE_TRANSFORMS)
-        _DUMP("MESH_BONE_COUNT",           MESH_BONE_COUNT)
-        _DUMP("UWORLD_PERSISTENT_LEVEL",   UWORLD_PERSISTENT_LEVEL)
-        _DUMP("UWORLD_NET_DRIVER",         UWORLD_NET_DRIVER)
-        _DUMP("UWORLD_GAME_INSTANCE",      UWORLD_GAME_INSTANCE)
-        _DUMP("UWORLD_GAME_STATE",         UWORLD_GAME_STATE)
+        _DUMP("UOBJECT_FLAGS",              UOBJECT_FLAGS)
+        _DUMP("UOBJECT_INTERNAL_INDEX",     UOBJECT_INTERNAL_INDEX)
+        _DUMP("UOBJECT_NAME_PRIVATE",       UOBJECT_NAME_PRIVATE)
+        _DUMP("UOBJECT_OUTER",              UOBJECT_OUTER)
+        _DUMP("FUOBJECTITEM_SIZE",          FUOBJECTITEM_SIZE)
+        _DUMP("FTRANSFORM_SIZE",            FTRANSFORM_SIZE)
+        _DUMP("MESH_BONE_SPACE_TRANSFORMS", MESH_BONE_SPACE_TRANSFORMS)
+        _DUMP("MESH_BONE_COUNT",            MESH_BONE_COUNT)
+        _DUMP("UWORLD_PERSISTENT_LEVEL",    UWORLD_PERSISTENT_LEVEL)
+        _DUMP("UWORLD_NET_DRIVER",          UWORLD_NET_DRIVER)
+        _DUMP("UWORLD_GAME_INSTANCE",       UWORLD_GAME_INSTANCE)
+        _DUMP("UWORLD_GAME_STATE",          UWORLD_GAME_STATE)
         _DUMP("GAME_INSTANCE_LOCAL_PLAYERS",GAME_INSTANCE_LOCAL_PLAYERS)
-        _DUMP("LOCAL_PLAYER_CONTROLLER",   LOCAL_PLAYER_CONTROLLER)
-        _DUMP("PLAYER_CONTROLLER_PAWN",    PLAYER_CONTROLLER_PAWN)
-        _DUMP("PLAYER_CONTROLLER_ROTATION",PLAYER_CONTROLLER_ROTATION)
-        _DUMP("GAMESTATE_PLAYER_ARRAY",    GAMESTATE_PLAYER_ARRAY)
-        _DUMP("PAWN_MESH",                 PAWN_MESH)
-        _DUMP("PAWN_PLAYER_STATE",         PAWN_PLAYER_STATE)
-        _DUMP("PAWN_HEALTH",               PAWN_HEALTH)
-        _DUMP("PAWN_TEAM_ID",              PAWN_TEAM_ID)
-        _DUMP("PLAYER_STATE_NAME",         PLAYER_STATE_NAME)
-        _DUMP("CAM_MANAGER_CACHE",         CAM_MANAGER_CACHE)
-        _DUMP("VIEW_INFO_LOCATION",        VIEW_INFO_LOCATION)
-        _DUMP("VIEW_INFO_ROTATION",        VIEW_INFO_ROTATION)
-        _DUMP("VIEW_INFO_FOV",             VIEW_INFO_FOV)
+        _DUMP("LOCAL_PLAYER_CONTROLLER",    LOCAL_PLAYER_CONTROLLER)
+        _DUMP("PLAYER_CONTROLLER_PAWN",     PLAYER_CONTROLLER_PAWN)
+        _DUMP("PLAYER_CONTROLLER_ROTATION", PLAYER_CONTROLLER_ROTATION)
+        _DUMP("GAMESTATE_PLAYER_ARRAY",     GAMESTATE_PLAYER_ARRAY)
+        _DUMP("PAWN_MESH",                  PAWN_MESH)
+        _DUMP("PAWN_PLAYER_STATE",          PAWN_PLAYER_STATE)
+        _DUMP("PAWN_HEALTH",                PAWN_HEALTH)
+        _DUMP("PAWN_TEAM_ID",               PAWN_TEAM_ID)
+        _DUMP("PLAYER_STATE_NAME",          PLAYER_STATE_NAME)
+        _DUMP("CAM_MANAGER_CACHE",          CAM_MANAGER_CACHE)
+        _DUMP("VIEW_INFO_LOCATION",         VIEW_INFO_LOCATION)
+        _DUMP("VIEW_INFO_ROTATION",         VIEW_INFO_ROTATION)
+        _DUMP("VIEW_INFO_FOV",              VIEW_INFO_FOV)
 #undef _DUMP
     }
 
