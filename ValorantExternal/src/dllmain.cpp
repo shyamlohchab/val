@@ -7,7 +7,7 @@
 #include "wndproc.h"
 #include "features/aimbot.h"
 #include "features/esp.h"
-#include "features/chams.h"
+#include "chams.h"
 #include "features/skinchanger.h"
 
 // Forward declarations
@@ -48,7 +48,7 @@ void MainThread(HMODULE hModule)
     // Hook WndProc for ImGui input
     WndProc::Init();
 
-    // Main loop — runs until INSERT is pressed to unload
+    // Main loop — runs until END is pressed to unload
     while (!GetAsyncKeyState(VK_END))
     {
         Sleep(10);

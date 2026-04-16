@@ -25,12 +25,55 @@ namespace Aimbot
     static FRotator GetViewRotation()
     {
         uintptr_t gworld = Decryption::GetGWorld();
-        uintptr_t gi     = *reinterpret_cast<uintptr_t*>(gworld + Offsets::UWORLD_GAME_INSTANCE);
-        uintptr_t lp     = *reinterpret_cast<uintptr_t*>(
-            *reinterpret_cast<uintptr_t*>(gi + Offsets::GAME_INSTANCE_LOCAL_PLAYERS)
-            + 0x0); // first element
-        uintptr_t pc     = *reinterpret_cast<uintptr_t*>(lp + Offsets::LOCAL_PLAYER_CONTROLLER);
+        if (!gworld) return {};
+        uintptr_t gi = *reinterpret_cast<uintptr_t*>(gworld + Offsets::UWORLD_GAME_INSTANCE);
+        if (!gi) return {};
+        uintptr_t localPlayersPtr = *reinterpret_cast<uintptr_t*>(gi + Offsets::GAME_INSTANCE_LOCAL_PLAYERS);
+        if (!localPlayersPtr) return {};
+        uintptr_t lp = *reinterpret_cast<uintptr_t*>(localPlayersPtr); // first element
+        if (!lp) return {};
+        uintptr_t pc = *reinterpret_cast<uintptr_t*>(lp + Offsets::LOCAL_PLAYER_CONTROLLER);
+        if (!pc) return {};
         return *reinterpret_cast<FRotator*>(pc + 0x440); // ControlRotation offset
+    }
+
+    // Reads the local pawn root position
+    static FVector GetLocalPawnPos()
+    {
+        uintptr_t gworld = Decryption::GetGWorld();
+        if (!gworld) return {};
+        uintptr_t gi = *reinterpret_cast<uintptr_t*>(gworld + Offsets::UWORLD_GAME_INSTANCE);
+        if (!gi) return {};
+        uintptr_t localPlayersPtr = *reinterpret_cast<uintptr_t*>(gi + Offsets::GAME_INSTANCE_LOCAL_PLAYERS);
+        if (!localPlayersPtr) return {};
+        uintptr_t lp = *reinterpret_cast<uintptr_t*>(localPlayersPtr);
+        if (!lp) return {};
+        uintptr_t pc = *reinterpret_cast<uintptr_t*>(lp + Offsets::LOCAL_PLAYER_CONTROLLER);
+        if (!pc) return {};
+        uintptr_t pawn = *reinterpret_cast<uintptr_t*>(pc + Offsets::PLAYER_CONTROLLER_PAWN);
+        if (!pawn) return {};
+        uintptr_t mesh = *reinterpret_cast<uintptr_t*>(pawn + Offsets::PAWN_MESH);
+        if (!mesh) return {};
+        // Use pelvis bone as root position
+        return GetBonePos(mesh, Offsets::BONE_PELVIS);
+    }
+
+    // Reads the local player's team ID
+    static int GetLocalTeamID()
+    {
+        uintptr_t gworld = Decryption::GetGWorld();
+        if (!gworld) return -1;
+        uintptr_t gi = *reinterpret_cast<uintptr_t*>(gworld + Offsets::UWORLD_GAME_INSTANCE);
+        if (!gi) return -1;
+        uintptr_t localPlayersPtr = *reinterpret_cast<uintptr_t*>(gi + Offsets::GAME_INSTANCE_LOCAL_PLAYERS);
+        if (!localPlayersPtr) return -1;
+        uintptr_t lp = *reinterpret_cast<uintptr_t*>(localPlayersPtr);
+        if (!lp) return -1;
+        uintptr_t pc = *reinterpret_cast<uintptr_t*>(lp + Offsets::LOCAL_PLAYER_CONTROLLER);
+        if (!pc) return -1;
+        uintptr_t pawn = *reinterpret_cast<uintptr_t*>(pc + Offsets::PLAYER_CONTROLLER_PAWN);
+        if (!pawn) return -1;
+        return *reinterpret_cast<int*>(pawn + Offsets::PAWN_TEAM_ID);
     }
 
     // Sends a relative mouse move to aim toward target
@@ -56,15 +99,17 @@ namespace Aimbot
         uintptr_t gworld = Decryption::GetGWorld();
         if (!gworld) return;
 
-        // Iterate player array from GameState via offset constant
         uintptr_t gameState = *reinterpret_cast<uintptr_t*>(gworld + Offsets::UWORLD_GAME_STATE);
-        auto& playerArray   = *reinterpret_cast<TArray<uintptr_t>*>(
+        if (!gameState) return;
+
+        auto& playerArray = *reinterpret_cast<TArray<uintptr_t>*>(
             gameState + Offsets::GAMESTATE_PLAYER_ARRAY);
 
-        FVector localPos = {}; // TODO: read local pawn root
-        float   bestFov  = g_cfg.fov;
-        FVector bestBone = {};
-        bool    found    = false;
+        FVector localPos  = GetLocalPawnPos();
+        int     localTeam = GetLocalTeamID();
+        float   bestFov   = g_cfg.fov;
+        FVector bestBone  = {};
+        bool    found     = false;
 
         for (int i = 0; i < playerArray.Count; ++i)
         {
@@ -75,9 +120,7 @@ namespace Aimbot
             if (!pawn) continue;
 
             int team = *reinterpret_cast<int*>(pawn + Offsets::PAWN_TEAM_ID);
-            // Skip teammates (team 0 = local, same team)
-            // TODO: compare against local team ID
-            (void)team;
+            if (localTeam != -1 && team == localTeam) continue; // skip teammates
 
             uintptr_t mesh = *reinterpret_cast<uintptr_t*>(pawn + Offsets::PAWN_MESH);
             if (!mesh) continue;
@@ -101,7 +144,7 @@ namespace Aimbot
 
         if (found)
         {
-            FVector delta = bestBone - localPos;
+            FVector delta   = bestBone - localPos;
             FRotator target = Math::VectorToRotator(delta);
             SetAim(target);
 
@@ -110,4 +153,6 @@ namespace Aimbot
                 mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
         }
     }
+
+    FVector* GetBestTarget() { return nullptr; } // unused externally for now
 }

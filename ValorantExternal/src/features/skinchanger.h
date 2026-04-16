@@ -1,14 +1,17 @@
 #pragma once
 #include <cstdint>
 #include <string>
+#include <map>
 
 namespace SkinChanger
 {
     struct Config
     {
         bool enabled = false;
-        // Map of weapon slot index -> skin asset path
-        // e.g. slot 0 = primary, 1 = sidearm, etc.
+        // Map of weapon slot index -> desired skin asset path (wstring)
+        std::map<int, std::wstring> skinMap;
+        // Original skin paths saved before Apply() — populated on first Apply()
+        std::map<int, std::wstring> originalSkinMap;
     };
 
     extern Config g_cfg;

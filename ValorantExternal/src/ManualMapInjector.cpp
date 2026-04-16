@@ -1,4 +1,4 @@
-#include <Windows.h>
+#include "ManualMapInjector.h"
 #include <cstdint>
 #include <fstream>
 #include <vector>
@@ -14,7 +14,6 @@ struct ManualMapData
     HINSTANCE  hMod;
     FARPROC    fnLoadLibraryA;
     FARPROC    fnGetProcAddress;
-    FARPROC    fnDllMain;
 };
 
 // Shellcode executed in the target process to fix relocations,
@@ -25,7 +24,7 @@ static void __stdcall ShellCode(ManualMapData* pData)
 
     BYTE* base = reinterpret_cast<BYTE*>(pData->hMod);
     auto  pNT  = reinterpret_cast<IMAGE_NT_HEADERS*>(
-                    base + reinterpret_cast<IMAGE_DOS_HEADER*>(base)->e_lfanew);
+                     base + reinterpret_cast<IMAGE_DOS_HEADER*>(base)->e_lfanew);
 
     // Fix base relocations
     uintptr_t delta = reinterpret_cast<uintptr_t>(base)
@@ -65,10 +64,10 @@ static void __stdcall ShellCode(ManualMapData* pData)
     for (; importDir->Name; ++importDir)
     {
         HMODULE hLib = fnLoadLib(reinterpret_cast<char*>(base + importDir->Name));
-        auto* thunk  = reinterpret_cast<IMAGE_THUNK_DATA*>(
-                            base + importDir->FirstThunk);
-        auto* origThunk = reinterpret_cast<IMAGE_THUNK_DATA*>(
-                            base + importDir->OriginalFirstThunk);
+        auto* thunk      = reinterpret_cast<IMAGE_THUNK_DATA*>(
+                               base + importDir->FirstThunk);
+        auto* origThunk  = reinterpret_cast<IMAGE_THUNK_DATA*>(
+                               base + importDir->OriginalFirstThunk);
 
         for (; origThunk->u1.AddressOfData; ++thunk, ++origThunk)
         {
@@ -110,7 +109,7 @@ bool ManualMap(HANDLE hProc, const char* dllPath)
 
     auto* dosHdr = reinterpret_cast<IMAGE_DOS_HEADER*>(buf.data());
     auto* ntHdr  = reinterpret_cast<IMAGE_NT_HEADERS*>(
-                        buf.data() + dosHdr->e_lfanew);
+                       buf.data() + dosHdr->e_lfanew);
 
     // Allocate memory in target process
     BYTE* targetBase = reinterpret_cast<BYTE*>(
@@ -138,11 +137,11 @@ bool ManualMap(HANDLE hProc, const char* dllPath)
 
     // Allocate and write shellcode data
     ManualMapData mapData{};
-    mapData.hMod            = reinterpret_cast<HINSTANCE>(targetBase);
-    mapData.fnLoadLibraryA  = reinterpret_cast<FARPROC>(GetProcAddress(
-                                GetModuleHandleA("kernel32.dll"), "LoadLibraryA"));
+    mapData.hMod           = reinterpret_cast<HINSTANCE>(targetBase);
+    mapData.fnLoadLibraryA = reinterpret_cast<FARPROC>(GetProcAddress(
+                                 GetModuleHandleA("kernel32.dll"), "LoadLibraryA"));
     mapData.fnGetProcAddress = reinterpret_cast<FARPROC>(GetProcAddress(
-                                GetModuleHandleA("kernel32.dll"), "GetProcAddress"));
+                                   GetModuleHandleA("kernel32.dll"), "GetProcAddress"));
 
     void* pData = VirtualAllocEx(hProc, nullptr, sizeof(ManualMapData),
                                  MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);

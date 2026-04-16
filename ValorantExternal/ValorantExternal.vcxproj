@@ -76,6 +76,7 @@
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\decryption.cpp" />
     <ClCompile Include="src\wndproc.cpp" />
+    <ClCompile Include="src\dx12hook.cpp" />
     <ClCompile Include="src\hkPostRender.cpp" />
     <ClCompile Include="src\ManualMapInjector.cpp" />
     <ClCompile Include="src\features\aimbot.cpp" />
@@ -95,7 +96,13 @@
     <ClInclude Include="src\wndproc.h" />
     <ClInclude Include="src\offsets.h" />
     <ClInclude Include="src\sdk.h" />
+    <ClInclude Include="src\ManualMapInjector.h" />
     <ClInclude Include="src\game\GameClasses.h" />
+    <ClInclude Include="src\game\UCanvas.h" />
+    <ClInclude Include="src\game\UAresInventory.h" />
+    <ClInclude Include="src\features\aimbot.h" />
+    <ClInclude Include="src\features\esp.h" />
+    <ClInclude Include="src\features\skinchanger.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
