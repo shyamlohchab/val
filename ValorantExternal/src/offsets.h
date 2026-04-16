@@ -4,17 +4,17 @@
 #include <cstdint>
 #include <cstring>
 
-// ============================================================
+// ============================================================================
 //  offsets.h  —  UE5.3 Valorant  (VALORANT-Win64-Shipping.exe)
 //  Fox build  |  shyamlohchab/val
 //
 //  UE5.3 — no decrypt chain. All globals are plaintext.
 //  AOB scan + RIP resolve only. Decryption::Init() is dead.
-// ============================================================
+// ============================================================================
 
-// ────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────
 //  INTERNAL HELPERS
-// ────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────
 
 template<typename T>
 static inline T _Off_RPM(uintptr_t addr)
@@ -51,9 +51,9 @@ inline uintptr_t _Off_ResolveRIP(uintptr_t hit,
     return hit + instrSz + disp;
 }
 
-// ────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────
 //  BONE INDICES  (Valorant skeleton — stable across patches)
-// ────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────
 namespace Offsets
 {
     constexpr int BONE_HEAD   = 8;
@@ -65,42 +65,42 @@ namespace Offsets
     constexpr int BONE_LFOOT  = 78;
     constexpr int BONE_RFOOT  = 98;
 
-    // ────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────
     //  LATEST PATCH — MODULE-RELATIVE OFFSETS
     //  All values are relative to VALORANT-Win64-Shipping.exe base.
     //  Usage: g_moduleBase + OFFSET_XXX
-    // ────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────
 
-    // ── Core engine globals ──────────────────────────────────
+    // ──  Core engine globals ─────────────────────────────────────────────────
     constexpr uintptr_t OFFSET_GWORLD              = 0x0C1AD2A0; // UWorld**
     constexpr uintptr_t OFFSET_FNAME_POOL          = 0x0C34B800; // FNamePool (GNamePoolData)
 
-    // ── UObject system ───────────────────────────────────────
+    // ──  UObject system ──────────────────────────────────────────────────────
     constexpr uintptr_t OFFSET_PROCESS_EVENT       = 0x01B74230; // UObject::ProcessEvent
     constexpr uintptr_t OFFSET_STATIC_FIND_OBJECT  = 0x01BA05C0; // StaticFindObject
     constexpr uintptr_t OFFSET_STATIC_LOAD_OBJECT  = 0x01BA40F0; // StaticLoadObject
 
-    // ── Memory ───────────────────────────────────────────────
+    // ──  Memory ──────────────────────────────────────────────────────────────
     constexpr uintptr_t OFFSET_FMEMORY_MALLOC      = 0x01747C10; // FMemory::Malloc
 
-    // ── Rendering / mesh ─────────────────────────────────────
+    // ──  Rendering / mesh ────────────────────────────────────────────────────
     constexpr uintptr_t OFFSET_BONE_MATRIX         = 0x040EBC10; // GetBoneMatrix / bone cache fn
     constexpr uintptr_t OFFSET_SET_OUTLINE_MODE    = 0x0407F040; // SetOutlineMode
 
-    // ── Exception / VEH trigger ──────────────────────────────
+    // ──  Exception / VEH trigger ─────────────────────────────────────────────
     constexpr uintptr_t OFFSET_TRIGGER_VEH         = 0x0177F496; // TriggerVeh
 
-    // ── Game-specific functions ───────────────────────────────
-    constexpr uintptr_t OFFSET_PLAY_FINISHER                 = 0x062424D0;
-    constexpr uintptr_t OFFSET_GET_SPREAD_VALUES             = 0x062DEAA0;
-    constexpr uintptr_t OFFSET_GET_SPREAD_ANGLES             = 0x06F04280;
-    constexpr uintptr_t OFFSET_TOVECTOR_AND_NORMALIZE        = 0x01847290;
-    constexpr uintptr_t OFFSET_TOANGLE_AND_NORMALIZE         = 0x01841A90;
+    // ──  Game-specific functions ──────────────────────────────────────────────
+    constexpr uintptr_t OFFSET_PLAY_FINISHER                  = 0x062424D0;
+    constexpr uintptr_t OFFSET_GET_SPREAD_VALUES              = 0x062DEAA0;
+    constexpr uintptr_t OFFSET_GET_SPREAD_ANGLES              = 0x06F04280;
+    constexpr uintptr_t OFFSET_TOVECTOR_AND_NORMALIZE         = 0x01847290;
+    constexpr uintptr_t OFFSET_TOANGLE_AND_NORMALIZE          = 0x01841A90;
     constexpr uintptr_t OFFSET_GET_FIRING_LOCATION_AND_DIR   = 0x06AA7A30;
 
-    // ────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────
     //  STATIC STRUCT OFFSETS  (UE5.3 — rescan after engine bump)
-    // ────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────
 
     // UObject layout (UE5.3)
     // +0x00  vtable
@@ -130,9 +130,9 @@ namespace Offsets
 
     // UWorld chain
     constexpr uint32_t UWORLD_PERSISTENT_LEVEL    = 0x58;  // ULevel*
-    constexpr uint32_t UWORLD_NET_DRIVER           = 0xE8;  // UNetDriver*
-    constexpr uint32_t UWORLD_GAME_INSTANCE        = 0x1A0; // UGameInstance*
-    constexpr uint32_t UWORLD_GAME_STATE           = 0x1A8; // AGameStateBase*
+    constexpr uint32_t UWORLD_NET_DRIVER          = 0xE8;  // UNetDriver*
+    constexpr uint32_t UWORLD_GAME_INSTANCE       = 0x1A0; // UGameInstance*
+    constexpr uint32_t UWORLD_GAME_STATE          = 0x1A8; // AGameStateBase*
 
     // UGameInstance
     constexpr uint32_t GAME_INSTANCE_LOCAL_PLAYERS = 0x38;  // TArray<ULocalPlayer*>
@@ -160,37 +160,37 @@ namespace Offsets
     constexpr uint32_t CAM_MANAGER_CACHE            = 0x1A50; // FCameraCacheEntry
 
     // FMinimalViewInfo inside FCameraCacheEntry
-    constexpr uint32_t VIEW_INFO_LOCATION            = 0x10;
-    constexpr uint32_t VIEW_INFO_ROTATION            = 0x1C;
-    constexpr uint32_t VIEW_INFO_FOV                 = 0x28;
+    constexpr uint32_t VIEW_INFO_LOCATION           = 0x10;
+    constexpr uint32_t VIEW_INFO_ROTATION           = 0x1C;
+    constexpr uint32_t VIEW_INFO_FOV                = 0x28;
 
-    // ────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────
     //  RUNTIME-RESOLVED GLOBALS
     //  Populated by Offsets::Init() via AOB scan.
-    // ────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────
     inline uintptr_t g_namePool    = 0; // FNamePool base
     inline uintptr_t g_uObjectArray= 0; // FUObjectArray base
     inline uintptr_t g_world       = 0; // UWorld* (single deref)
     inline uintptr_t g_moduleBase  = 0; // image base
 
     // Resolved function pointers (set in Init)
-    inline uintptr_t g_processEvent             = 0;
-    inline uintptr_t g_staticFindObject         = 0;
-    inline uintptr_t g_staticLoadObject         = 0;
-    inline uintptr_t g_fmemoryMalloc            = 0;
-    inline uintptr_t g_boneMatrix               = 0;
-    inline uintptr_t g_setOutlineMode           = 0;
-    inline uintptr_t g_triggerVeh               = 0;
-    inline uintptr_t g_playFinisher             = 0;
-    inline uintptr_t g_getSpreadValues          = 0;
-    inline uintptr_t g_getSpreadAngles          = 0;
-    inline uintptr_t g_toVectorAndNormalize     = 0;
-    inline uintptr_t g_toAngleAndNormalize      = 0;
-    inline uintptr_t g_getFiringLocationAndDir  = 0;
+    inline uintptr_t g_processEvent              = 0;
+    inline uintptr_t g_staticFindObject          = 0;
+    inline uintptr_t g_staticLoadObject          = 0;
+    inline uintptr_t g_fmemoryMalloc             = 0;
+    inline uintptr_t g_boneMatrix                = 0;
+    inline uintptr_t g_setOutlineMode            = 0;
+    inline uintptr_t g_triggerVeh                = 0;
+    inline uintptr_t g_playFinisher              = 0;
+    inline uintptr_t g_getSpreadValues           = 0;
+    inline uintptr_t g_getSpreadAngles           = 0;
+    inline uintptr_t g_toVectorAndNormalize      = 0;
+    inline uintptr_t g_toAngleAndNormalize       = 0;
+    inline uintptr_t g_getFiringLocationAndDir   = 0;
 
-    // ────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────
     //  AOB PATTERNS  (verify in x64dbg after each patch)
-    // ────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────
 
     // GNamePoolData — LEA RAX,[rip+X]
     static constexpr struct { const char* pat; const char* mask; uint32_t rip_off; uint32_t instr_sz; bool deref; }
@@ -209,7 +209,7 @@ namespace Offsets
         "\x48\x85\xC0"
         "\x74\x00"
         "\x48\x8B\x40\x00",
-        "xxx????xxxx?xxx?",
+        "xxx????xxx x?xxx?",
         3, 7, false
     };
 
@@ -223,11 +223,11 @@ namespace Offsets
         3, 7, true
     };
 
-    // ────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────
     //  Init()  —  call once from DllMain / init thread.
     //  Replaces Decryption::Init() entirely.
     //  Returns false if any critical AOB fails.
-    // ────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────
     inline bool Init()
     {
         g_moduleBase = reinterpret_cast<uintptr_t>(
@@ -239,22 +239,22 @@ namespace Offsets
             reinterpret_cast<HMODULE>(g_moduleBase), &mi, sizeof(mi));
         const size_t sz = mi.SizeOfImage;
 
-        // ── Resolve function pointers from static offsets ────
-        g_processEvent            = g_moduleBase + OFFSET_PROCESS_EVENT;
-        g_staticFindObject        = g_moduleBase + OFFSET_STATIC_FIND_OBJECT;
-        g_staticLoadObject        = g_moduleBase + OFFSET_STATIC_LOAD_OBJECT;
-        g_fmemoryMalloc           = g_moduleBase + OFFSET_FMEMORY_MALLOC;
-        g_boneMatrix              = g_moduleBase + OFFSET_BONE_MATRIX;
-        g_setOutlineMode          = g_moduleBase + OFFSET_SET_OUTLINE_MODE;
-        g_triggerVeh              = g_moduleBase + OFFSET_TRIGGER_VEH;
-        g_playFinisher            = g_moduleBase + OFFSET_PLAY_FINISHER;
-        g_getSpreadValues         = g_moduleBase + OFFSET_GET_SPREAD_VALUES;
-        g_getSpreadAngles         = g_moduleBase + OFFSET_GET_SPREAD_ANGLES;
-        g_toVectorAndNormalize    = g_moduleBase + OFFSET_TOVECTOR_AND_NORMALIZE;
-        g_toAngleAndNormalize     = g_moduleBase + OFFSET_TOANGLE_AND_NORMALIZE;
-        g_getFiringLocationAndDir = g_moduleBase + OFFSET_GET_FIRING_LOCATION_AND_DIR;
+        // ──  Resolve function pointers from static offsets ──────────────────
+        g_processEvent              = g_moduleBase + OFFSET_PROCESS_EVENT;
+        g_staticFindObject          = g_moduleBase + OFFSET_STATIC_FIND_OBJECT;
+        g_staticLoadObject          = g_moduleBase + OFFSET_STATIC_LOAD_OBJECT;
+        g_fmemoryMalloc             = g_moduleBase + OFFSET_FMEMORY_MALLOC;
+        g_boneMatrix                = g_moduleBase + OFFSET_BONE_MATRIX;
+        g_setOutlineMode            = g_moduleBase + OFFSET_SET_OUTLINE_MODE;
+        g_triggerVeh                = g_moduleBase + OFFSET_TRIGGER_VEH;
+        g_playFinisher              = g_moduleBase + OFFSET_PLAY_FINISHER;
+        g_getSpreadValues           = g_moduleBase + OFFSET_GET_SPREAD_VALUES;
+        g_getSpreadAngles           = g_moduleBase + OFFSET_GET_SPREAD_ANGLES;
+        g_toVectorAndNormalize      = g_moduleBase + OFFSET_TOVECTOR_AND_NORMALIZE;
+        g_toAngleAndNormalize       = g_moduleBase + OFFSET_TOANGLE_AND_NORMALIZE;
+        g_getFiringLocationAndDir   = g_moduleBase + OFFSET_GET_FIRING_LOCATION_AND_DIR;
 
-        // ── GNamePoolData (AOB → RIP resolve) ───────────────
+        // ──  GNamePoolData (AOB → RIP resolve) ──────────────────────────────
         {
             uintptr_t hit = _Off_PatternScan(g_moduleBase, sz,
                 AOB_NAME_POOL.pat, AOB_NAME_POOL.mask);
@@ -265,7 +265,7 @@ namespace Offsets
                 ? _Off_RPM<uintptr_t>(resolved) : resolved;
         }
 
-        // ── GUObjectArray (AOB → RIP resolve) ────────────────
+        // ──  GUObjectArray (AOB → RIP resolve) ──────────────────────────────
         {
             uintptr_t hit = _Off_PatternScan(g_moduleBase, sz,
                 AOB_UOBJECT_ARRAY.pat, AOB_UOBJECT_ARRAY.mask);
@@ -276,7 +276,7 @@ namespace Offsets
                 ? _Off_RPM<uintptr_t>(resolved) : resolved;
         }
 
-        // ── GWorld (AOB → RIP resolve → single deref) ────────
+        // ──  GWorld (AOB → RIP resolve → single deref) ──────────────────────
         {
             uintptr_t hit = _Off_PatternScan(g_moduleBase, sz,
                 AOB_GWORLD.pat, AOB_GWORLD.mask);
@@ -290,9 +290,9 @@ namespace Offsets
         return (g_namePool && g_uObjectArray && g_world);
     }
 
-    // ────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────
     //  DumpToDebug  — call after Init() to verify in x64dbg
-    // ────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────
     inline void DumpToDebug()
     {
         char buf[256];
