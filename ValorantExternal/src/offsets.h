@@ -91,15 +91,15 @@ namespace Offsets
     constexpr uintptr_t OFFSET_TRIGGER_VEH         = 0x0177F496; // TriggerVeh
 
     // ──  Game-specific functions ──────────────────────────────────────────────
-    constexpr uintptr_t OFFSET_PLAY_FINISHER                  = 0x062424D0;
-    constexpr uintptr_t OFFSET_GET_SPREAD_VALUES              = 0x062DEAA0;
-    constexpr uintptr_t OFFSET_GET_SPREAD_ANGLES              = 0x06F04280;
-    constexpr uintptr_t OFFSET_TOVECTOR_AND_NORMALIZE         = 0x01847290;
-    constexpr uintptr_t OFFSET_TOANGLE_AND_NORMALIZE          = 0x01841A90;
-    constexpr uintptr_t OFFSET_GET_FIRING_LOCATION_AND_DIR   = 0x06AA7A30;
+    constexpr uintptr_t OFFSET_PLAY_FINISHER                = 0x062424D0;
+    constexpr uintptr_t OFFSET_GET_SPREAD_VALUES            = 0x062DEAA0;
+    constexpr uintptr_t OFFSET_GET_SPREAD_ANGLES            = 0x06F04280;
+    constexpr uintptr_t OFFSET_TOVECTOR_AND_NORMALIZE       = 0x01847290;
+    constexpr uintptr_t OFFSET_TOANGLE_AND_NORMALIZE        = 0x01841A90;
+    constexpr uintptr_t OFFSET_GET_FIRING_LOCATION_AND_DIR  = 0x06AA7A30;
 
     // ────────────────────────────────────────────────────────────────────────
-    //  STATIC STRUCT OFFSETS  (UE5.3 — rescan after engine bump)
+    //  STATIC STRUCT OFFSETS  (UE5.3 — confirmed layout)
     // ────────────────────────────────────────────────────────────────────────
 
     // UObject layout (UE5.3)
@@ -123,7 +123,7 @@ namespace Offsets
     // FTransform size (SSE-aligned, 48 bytes)
     constexpr uint32_t FTRANSFORM_SIZE        = 0x30;
 
-    // USkeletal mesh — BoneSpaceTransforms (UE5.3)
+    // USkeletalMeshComponent — BoneSpaceTransforms (UE5.3)
     // Was ComponentSpaceBases @ 0x5B0 in UE4
     constexpr uint32_t MESH_BONE_SPACE_TRANSFORMS = 0x5E0; // TArray<FTransform>
     constexpr uint32_t MESH_BONE_COUNT            = 0x5E8; // TArray.Num (Data+0x08)
@@ -135,10 +135,10 @@ namespace Offsets
     constexpr uint32_t UWORLD_GAME_STATE          = 0x1A8; // AGameStateBase*
 
     // UGameInstance
-    constexpr uint32_t GAME_INSTANCE_LOCAL_PLAYERS = 0x38;  // TArray<ULocalPlayer*>
+    constexpr uint32_t GAME_INSTANCE_LOCAL_PLAYERS = 0x38; // TArray<ULocalPlayer*>
 
     // ULocalPlayer
-    constexpr uint32_t LOCAL_PLAYER_CONTROLLER     = 0x30;  // APlayerController*
+    constexpr uint32_t LOCAL_PLAYER_CONTROLLER     = 0x30; // APlayerController*
 
     // APlayerController (UE5.3 — +0xB0 shift vs UE4)
     constexpr uint32_t PLAYER_CONTROLLER_PAWN      = 0x350; // APawn* AcknowledgedPawn
@@ -317,13 +317,33 @@ namespace Offsets
         _DUMP("g_toVectorAndNormalize",    g_toVectorAndNormalize)
         _DUMP("g_toAngleAndNormalize",     g_toAngleAndNormalize)
         _DUMP("g_getFiringLocationAndDir", g_getFiringLocationAndDir)
-        _DUMP("BONE_SPACE_TRANSFORMS",     MESH_BONE_SPACE_TRANSFORMS)
-        _DUMP("PLAYER_CONTROLLER_PAWN",    PLAYER_CONTROLLER_PAWN)
+        // ── struct offsets ──
+        _DUMP("UOBJECT_FLAGS",             UOBJECT_FLAGS)
+        _DUMP("UOBJECT_INTERNAL_INDEX",    UOBJECT_INTERNAL_INDEX)
+        _DUMP("UOBJECT_NAME_PRIVATE",      UOBJECT_NAME_PRIVATE)
+        _DUMP("UOBJECT_OUTER",             UOBJECT_OUTER)
+        _DUMP("FUOBJECTITEM_SIZE",         FUOBJECTITEM_SIZE)
+        _DUMP("FTRANSFORM_SIZE",           FTRANSFORM_SIZE)
+        _DUMP("MESH_BONE_SPACE_TRANSFORMS",MESH_BONE_SPACE_TRANSFORMS)
+        _DUMP("MESH_BONE_COUNT",           MESH_BONE_COUNT)
+        _DUMP("UWORLD_PERSISTENT_LEVEL",   UWORLD_PERSISTENT_LEVEL)
+        _DUMP("UWORLD_NET_DRIVER",         UWORLD_NET_DRIVER)
         _DUMP("UWORLD_GAME_INSTANCE",      UWORLD_GAME_INSTANCE)
         _DUMP("UWORLD_GAME_STATE",         UWORLD_GAME_STATE)
+        _DUMP("GAME_INSTANCE_LOCAL_PLAYERS",GAME_INSTANCE_LOCAL_PLAYERS)
+        _DUMP("LOCAL_PLAYER_CONTROLLER",   LOCAL_PLAYER_CONTROLLER)
+        _DUMP("PLAYER_CONTROLLER_PAWN",    PLAYER_CONTROLLER_PAWN)
+        _DUMP("PLAYER_CONTROLLER_ROTATION",PLAYER_CONTROLLER_ROTATION)
         _DUMP("GAMESTATE_PLAYER_ARRAY",    GAMESTATE_PLAYER_ARRAY)
         _DUMP("PAWN_MESH",                 PAWN_MESH)
+        _DUMP("PAWN_PLAYER_STATE",         PAWN_PLAYER_STATE)
+        _DUMP("PAWN_HEALTH",               PAWN_HEALTH)
+        _DUMP("PAWN_TEAM_ID",              PAWN_TEAM_ID)
+        _DUMP("PLAYER_STATE_NAME",         PLAYER_STATE_NAME)
         _DUMP("CAM_MANAGER_CACHE",         CAM_MANAGER_CACHE)
+        _DUMP("VIEW_INFO_LOCATION",        VIEW_INFO_LOCATION)
+        _DUMP("VIEW_INFO_ROTATION",        VIEW_INFO_ROTATION)
+        _DUMP("VIEW_INFO_FOV",             VIEW_INFO_FOV)
 #undef _DUMP
     }
 
