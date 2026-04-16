@@ -1,46 +1,32 @@
 #include "decryption.h"
 #include "offsets.h"
-#include <Windows.h>
 
 namespace Decryption
 {
-    static uintptr_t g_base   = 0;
-    static uintptr_t g_gworld = 0;
-    static uintptr_t g_gobjs  = 0;
-    static uintptr_t g_gnames = 0;
-
-    // Valorant pointer decryption.
-    // Actual XOR/ROR constants change per patch — update from IDA.
-    // Current stub: single XOR with DECRYPT_KEY (0x0 = passthrough until patched).
-    uintptr_t DecryptPointer(uintptr_t encrypted)
-    {
-        // Example multi-step decryption (patch-specific, update as needed):
-        //   mov rax, [rcx+0x60]   ; load encrypted ptr
-        //   ror rax, 0x13
-        //   xor rax, rbx          ; rbx = some runtime key
-        //   sub rax, rdi
-        // Stub — replace with current patch decryption:
-        return encrypted ^ Offsets::DECRYPT_KEY;
-    }
+    // UE5.3 — no decrypt chain.
+    // All globals are plaintext. Offsets::Init() does the
+    // AOB scan + RIP resolve for GWorld, GUObjectArray, GNamePool.
+    // This file is a thin shim so callers don't need to change.
 
     bool Init()
     {
-        g_base = reinterpret_cast<uintptr_t>(GetModuleHandleA("ShooterGame-Win64-Shipping.exe"));
-        if (!g_base) return false;
-
-        // Read encrypted pointers from static offsets
-        uintptr_t enc_gworld = *reinterpret_cast<uintptr_t*>(g_base + Offsets::GWORLD_ENCRYPTED);
-        uintptr_t enc_gobjs  = *reinterpret_cast<uintptr_t*>(g_base + Offsets::GOBJECTS_ENCRYPTED);
-        uintptr_t enc_gnames = *reinterpret_cast<uintptr_t*>(g_base + Offsets::GNAMES_ENCRYPTED);
-
-        g_gworld = DecryptPointer(enc_gworld);
-        g_gobjs  = DecryptPointer(enc_gobjs);
-        g_gnames = DecryptPointer(enc_gnames);
-
-        return (g_gworld && g_gobjs && g_gnames);
+        // Offsets::Init() handles:
+        //   - GetModuleHandleA("VALORANT-Win64-Shipping.exe")  <- correct name
+        //   - AOB scan for GNamePool, GUObjectArray, GWorld
+        //   - RIP resolve + optional single deref
+        //   - Populates g_namePool, g_uObjectArray, g_world, g_moduleBase
+        //   - Resolves all function pointers
+        return Offsets::Init();
     }
 
-    uintptr_t GetGWorld()   { return g_gworld; }
-    uintptr_t GetGObjects() { return g_gobjs;  }
-    uintptr_t GetGNames()   { return g_gnames; }
+    // No decryption needed — pointers are plaintext in UE5.3.
+    // Kept for API compatibility; just returns the value as-is.
+    uintptr_t DecryptPointer(uintptr_t encrypted)
+    {
+        return encrypted;
+    }
+
+    uintptr_t GetGWorld()   { return Offsets::g_world;        }
+    uintptr_t GetGObjects() { return Offsets::g_uObjectArray; }
+    uintptr_t GetGNames()   { return Offsets::g_namePool;     }
 }

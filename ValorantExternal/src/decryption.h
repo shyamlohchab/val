@@ -4,25 +4,20 @@
 
 namespace Decryption
 {
-    // Initializes all decrypted pointers (GObjects, GNames, GWorld, etc.)
+    // UE5.3 — delegates to Offsets::Init() internally.
+    // Returns false only if VALORANT-Win64-Shipping.exe isn't loaded
+    // or any critical AOB pattern fails to match.
     bool Init();
 
-    // Returns decrypted GWorld pointer
-    uintptr_t GetGWorld();
-
-    // Returns decrypted GObjects base
-    uintptr_t GetGObjects();
-
-    // Returns decrypted GNames base
-    uintptr_t GetGNames();
-
-    // Decrypts a single encrypted pointer using Valorant's XOR/ROR scheme
+    // Passthrough in UE5.3 — no XOR/ROR chain.
+    // Kept for API compatibility.
     uintptr_t DecryptPointer(uintptr_t encrypted);
 
-    // Reads a decrypted UObject field at given offset
-    template<typename T>
-    T ReadDecrypted(uintptr_t base, uint32_t offset)
-    {
-        return *reinterpret_cast<T*>(DecryptPointer(base) + offset);
-    }
+    // Plaintext globals — read directly from Offsets:: namespace.
+    uintptr_t GetGWorld();
+    uintptr_t GetGObjects();
+    uintptr_t GetGNames();
+
+    // ReadDecrypted<T> removed — use RPM<T>(addr) from sdk.h instead.
+    // DecryptPointer is a passthrough so it was just an RPM wrapper.
 }

@@ -28,27 +28,46 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 
 void MainThread(HMODULE hModule)
 {
-    // Wait for the game to fully load
+    // Wait for game to fully load — increase if AOB scan returns 0
     Sleep(2000);
 
-    // Initialize decryption layer (GObjects, GNames, GWorld)
+    // --- INIT LAYER 1: Offsets (AOB scan, RIP resolve, function ptrs) ---
+    // Decryption::Init() delegates to Offsets::Init() internally.
+    // Correct module: VALORANT-Win64-Shipping.exe
     if (!Decryption::Init())
     {
+        // AOB scan failed — patch probably changed a sig.
+        // Enable _DEBUG and check Offsets::DumpToDebug() to see which ptr is 0.
         FreeLibraryAndExitThread(hModule, 0);
         return;
     }
 
-    // Hook DX12 Present / PostRender
+    // --- INIT LAYER 2: SDK globals (GNamePool, GUObjectArray, GWorld) ---
+    // Wire up sdk.h namespace so FNamePool::GetName() and
+    // SDK::GetObjectByIndex() / SDK::GetWorld() work correctly.
+    SDK::Init(
+        Offsets::g_namePool,       // FNamePool base
+        Offsets::g_uObjectArray,   // FUObjectArray base
+        Offsets::g_world           // GWorld** (single deref inside GetWorld())
+    );
+
+#ifdef _DEBUG
+    // Dump all resolved addresses to OutputDebugString.
+    // Check in x64dbg View -> Log or DebugView.
+    Offsets::DumpToDebug();
+#endif
+
+    // --- INIT LAYER 3: Rendering hook ---
     if (!DX12Hook::Init())
     {
         FreeLibraryAndExitThread(hModule, 0);
         return;
     }
 
-    // Hook WndProc for ImGui input
+    // --- INIT LAYER 4: Input hook ---
     WndProc::Init();
 
-    // Main loop — runs until END is pressed to unload
+    // Main loop — END key to unload
     while (!GetAsyncKeyState(VK_END))
     {
         Sleep(10);
